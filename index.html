@@ -1,0 +1,30 @@
+<html en='utf8'>
+  <style>
+  div {
+      font-size: 12px;
+      border-radius: 10px;
+      border: solid 1px #336699;
+      padding: 15px 15px 15px 15px;
+      line-height: 20px;
+      width: 400px;
+  }
+  </style>
+  <script src='/socket.io/socket.io.js'></script>
+  <script src='http://code.jquery.com/jquery-1.8.2.min.js'></script>
+  <script>
+  $(document).ready(function() {
+      var socket = io.connect('http://localhost:4040/');
+      // 2
+      socket.on('echoback', function(m) {
+          $('#panel').html($('#panel').html()+'<br>'+m);
+      });
+      // 1
+      $('#send').click(function() {
+          socket.emit('echopost', 'Hello Socket.IO');
+      });
+  });
+  </script>
+  
+  
+  <button id='send'>send</button>
+  <div id='panel'></div>
