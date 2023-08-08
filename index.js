@@ -1,11 +1,17 @@
-var fs = require('fs')
-var http = require('http')
-var socketio = require('socket.io')
-var options = {}
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+
+const app = express();
+const server = http.createServer(app);//開express server
+const io = new Server(server, {//cros
+  cors: {
+    origin: ['http://localhost:8080'],
+    methods: ['GET', 'POST'],
+  }
+});
 
 //http & socket port
-var server = http.createServer(options);//開一個http server
-var io = socketio(server);//httpserver->socket
 io.on('connection', function (socket) {//當客戶端連進來
     console.log(` ${socket.id} connected`);
     socket.emit("connected", {id:socket.id});
@@ -36,13 +42,14 @@ io.on('connection', function (socket) {//當客戶端連進來
      //加入房間
     socket.on('joinRoom',(roomId)=>{
         socket.join(roomId);
-        io.to(roomId).emit("message",`歡迎客戶端${socket.id}加入了房間：${roomId}`);
+        io.to(roomId).emit("hi",`歡迎客戶端${socket.id}加入了房間：${roomId}`);
         console.log(`客戶端${socket.id}加入了房間：${roomId}`);
     })
     //對房間內所有人發送
-    socket.on('roomMessage', (data) => {
+    socket.on('roomMessage', (data,callbackF) => {
         const { roomId, message } = data;
-        io.to(roomId).emit("message", `房間${roomId}中的${socket.id}: ${message}`);
+        io.to(roomId).emit("message", `{"socketId":"${socket.id}","message": "${message}"}`);
+        callbackF("got it");
     });
     //退出連接
     socket.on('disconnect', () => {
@@ -50,6 +57,7 @@ io.on('connection', function (socket) {//當客戶端連進來
     });
 })
 
-server.listen(4040)
-console.log("Server socket 4040")
-
+const PORT = 4040;
+server.listen(PORT, () => {
+  console.log(`Socket.IO server is listening on port ${PORT}`);
+});
